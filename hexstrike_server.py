@@ -39,7 +39,8 @@ import shutil
 import venv
 import zipfile
 from pathlib import Path
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS
 import psutil
 import signal
 import requests
@@ -93,6 +94,7 @@ logger = logging.getLogger(__name__)
 # Flask app configuration
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
+CORS(app)
 
 # API Configuration
 API_PORT = int(os.environ.get('HEXSTRIKE_PORT', 8888))
@@ -9018,7 +9020,38 @@ class FileOperationsManager:
 # Global file operations manager
 file_manager = FileOperationsManager()
 
+# ============================================================================
+# WEB DASHBOARD ROUTE
+# ============================================================================
+
+@app.route("/", methods=["GET"])
+def serve_dashboard():
+    """Serve the web dashboard"""
+    try:
+        dashboard_path = os.path.join(os.path.dirname(__file__), 'dashboard.html')
+        with open(dashboard_path, 'r') as f:
+            return f.read(), 200, {'Content-Type': 'text/html'}
+    except FileNotFoundError:
+        return '''
+<!DOCTYPE html>
+<html>
+<head><title>HexStrike AI</title></head>
+<body style="background: #0a0a0a; color: #ff6b6b; font-family: monospace; text-align: center; padding: 50px;">
+    <h1>🚀 HexStrike AI Dashboard</h1>
+    <p>Dashboard file not found. Please ensure dashboard.html exists in the application directory.</p>
+    <p>API is operational. Try accessing:</p>
+    <ul style="text-align: left; display: inline-block;">
+        <li><a href="/health" style="color: #ff6b6b;">GET /health</a> - Server status</li>
+        <li><a href="/api/cache/stats" style="color: #ff6b6b;">GET /api/cache/stats</a> - Cache statistics</li>
+        <li>POST /api/command - Execute command</li>
+    </ul>
+</body>
+</html>
+        ''', 200, {'Content-Type': 'text/html'}
+
+# ============================================================================
 # API Routes
+# ============================================================================
 
 @app.route("/health", methods=["GET"])
 def health_check():
