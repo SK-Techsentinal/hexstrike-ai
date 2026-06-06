@@ -198,6 +198,16 @@ python3 hexstrike_server.py --debug
 python3 hexstrike_server.py --port 8888
 ```
 
+> After starting the server, open the dashboard at:
+>
+> `http://127.0.0.1:8888/`
+>
+> In Codespaces, you can also use the terminal command:
+>
+> ```bash
+> $BROWSER http://127.0.0.1:8888/
+> ```
+>
 ### Verify Installation
 
 ```bash
