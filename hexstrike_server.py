@@ -92,7 +92,7 @@ except PermissionError:
 logger = logging.getLogger(__name__)
 
 # Flask app configuration
-app = Flask(__name__)
+app = Flask(__name__, static_folder='assets', static_url_path='/assets')
 app.config['JSON_SORT_KEYS'] = False
 CORS(app)
 
@@ -9020,19 +9020,21 @@ class FileOperationsManager:
 # Global file operations manager
 file_manager = FileOperationsManager()
 
-# ============================================================================
 # WEB DASHBOARD ROUTE
-# ============================================================================
-
 @app.route("/", methods=["GET"])
 def serve_dashboard():
     """Serve the web dashboard"""
-    try:
-        dashboard_path = os.path.join(os.path.dirname(__file__), 'dashboard.html')
+    dashboard_candidates = [
+        os.path.join(os.path.dirname(__file__), 'dashboard.html'),
+        os.path.join(os.path.dirname(__file__), '..', 'dashboard.html')
+    ]
+
+    dashboard_path = next((path for path in dashboard_candidates if os.path.exists(path)), None)
+    if dashboard_path:
         with open(dashboard_path, 'r') as f:
             return f.read(), 200, {'Content-Type': 'text/html'}
-    except FileNotFoundError:
-        return '''
+
+    return '''
 <!DOCTYPE html>
 <html>
 <head><title>HexStrike AI</title></head>
@@ -9049,7 +9051,10 @@ def serve_dashboard():
 </html>
         ''', 200, {'Content-Type': 'text/html'}
 
-# ============================================================================
+@app.route("/dashboard", methods=["GET"])
+def serve_dashboard_alias():
+    return serve_dashboard()
+
 # API Routes
 # ============================================================================
 
